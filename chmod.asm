@@ -55,7 +55,7 @@ swplus:    lda     ra                  ; get switch name
            plo     rb                  ; put it back
            lbr     stloop              ; loop back for more
 swerr:     sep     scall               ; display error
-           dw      f_inmsg
+           dw      o_inmsg
            db      'Invalid switch specified',10,13,0
            lbr     o_wrmboot           ; and return to Elf/OS
 swdone:    mov     rf,flags            ; where to store flags
@@ -79,7 +79,7 @@ loop1:     lda     rf                  ; look for first less <= space
            ldn     rf                  ; get byte from argument
            lbnz    good                ; jump if filename given
            sep     scall               ; otherwise display usage message
-           dw      f_inmsg
+           dw      o_inmsg
            db      'Usage: type filename',10,13,0
            sep     sret                ; and return to os
 good:      ldi     high fildes         ; get file descriptor
