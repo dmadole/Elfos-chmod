@@ -27,8 +27,12 @@ include    build.inc
            db      'Written by Michael H. Riley',0
 
 ; Rb - modifications
-;      0 - +e
-;      1 - -e
+;      0 - +x    1
+;      1 - -x    2
+;      2 - +w    4
+;      4 - -w    8
+;      8 - +h   16
+;     16 - -h   32
 
 start:     mov     rb,0                ; clear modifications
 stloop:    lda     ra                  ; move past any spaces
@@ -41,19 +45,49 @@ swloop:    lda     ra                  ; get byte from command line
            smi     2                   ; check for minus symbol
            lbnz    swdone              ; otherwise done with switches
 swminus:   lda     ra                  ; get switch name
+           plo     re                  ; save a copy
            smi     'x'                 ; check for e
-           lbnz    swerr               ; jump if not
+           lbnz    notmx               ; jump if not
            glo     rb                  ; set -e modification
            ori     2
            plo     rb                  ; and put it back
            lbr     stloop              ; loop back for more
+notmx:     glo     re                  ; recover byte
+           smi     'w'                 ; check for w
+           lbnz    notmw               ; jump if not
+           glo     rb                  ; set -w modifcation
+           ori     8
+           plo     rb
+           lbr     stloop
+notmw:     glo     re                  ; recover byte
+           smi     'h'                 ; check for h
+           lbnz    swerr               ; jump if invalid switch
+           glo     rb                  ; set -h modification
+           ori     32
+           plo     rb
+           lbr     stloop
 swplus:    lda     ra                  ; get switch name
-           smi     'x'                 ; check for e
-           lbnz    swerr               ; jump if not
-           glo     rb                  ; set +e modification
+           plo     re                  ; save a copy
+           smi     'x'                 ; check for x
+           lbnz    notpx               ; jump if not
+           glo     rb                  ; set +x modification
            ori     1
            plo     rb                  ; put it back
            lbr     stloop              ; loop back for more
+notpx:     glo     re                  ; recover byte
+           smi     'w'                 ; check for w
+           lbnz    notpw               ; jump if not
+           glo     rb                  ; set +w modification
+           ori     4
+           plo     rb
+           lbr     stloop
+notpw:     glo     re                  ; recover byte
+           smi     'h'                 ; check fo h
+           lbnz    swerr               ; jump if error
+           glo     rb                  ; set +h modification
+           ori     16
+           plo     rb
+           lbr     stloop
 swerr:     sep     scall               ; display error
            dw      o_inmsg
            db      'Invalid switch specified',10,13,0
@@ -129,19 +163,49 @@ mainlp:    mov     rf,sector           ; point to dir sector in FILDES
            mov     rf,flags            ; recover operations
            ldn     rf
            plo     rb
-           glo     rb                  ; get operations
-           ani     1                   ; see if +x
-           lbz     notx                ; jump if not
+
+           shr                         ; check for +x
+           plo     rb
+           lbnf    not1                ; jump if not
            ldn     r7                  ; get flags
-           ori     2                   ; turn on executable flag
-           str     r7                  ; and put it back
-notx:      glo     rb                  ; get operations
-           ani     2                   ; see if -x
-           lbz     notmx               ; jump if not
+           ori     2                   ; set x flag
+           str     r7                  ; and save
+not1:      glo     rb
+           shr                         ; check for -x
+           plo     rb
+           lbnf    not2
            ldn     r7                  ; get flags
-           ani     0fdh                ; turn off executable flag
-           str     r7                  ; and put it back
-notmx:
+           ani     0fdh                ; clear x flag
+           str     r7                  ; and save
+not2:      glo     rb                  ; get for +w
+           shr
+           plo     rb
+           lbnf    not3
+           ldn     r7
+           ori     4
+           str     r7
+not3:      glo     rb                  ; chck for -w
+           shr
+           plo     rb
+           lbnf    not4
+           ldn     r7
+           ani     0fbh
+           str     r7
+not4:      glo     rb                  ; check for +h
+           shr
+           plo     rb
+           lbnf    not5
+           ldn     r7
+           ori     8
+           str     r7
+not5:      glo     rb                  ; check for -h
+           shr
+           plo     rb
+           lbnf    not6
+           ldn     r7
+           ani     0f7h
+           str     r7
+not6:
            mov     rf,sector           ; point to dir sector in FILDES
            inc     rf
            lda     rf                  ; retrieve sector
