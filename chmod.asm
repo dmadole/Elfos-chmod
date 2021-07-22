@@ -6,8 +6,11 @@
 ; *** without express written permission from the author.         ***
 ; *******************************************************************
 
-include    bios.inc
-include    kernel.inc
+include    ../bios.inc
+include    ../kernel.inc
+
+d_idewrite: equ    044ah
+d_ideread:  equ    0447h
 
            org     8000h
            lbr     0ff00h
@@ -144,7 +147,7 @@ mainlp:    mov     rf,sector           ; point to dir sector in FILDES
            phi     r8
            mov     rf,secbuf           ; where to load sector
            sep     scall               ; call bios to read the sector
-           dw      f_ideread
+           dw      d_ideread
            mov     rf,dirent           ; need dirent offset
            lda     rf
            phi     r7
@@ -218,7 +221,7 @@ not6:
            phi     r8
            mov     rf,secbuf           ; where to load sector
            sep     scall               ; write sector back to disk
-           dw      f_idewrite
+           dw      d_idewrite
 
 done:      lbr     o_wrmboot           ; return to os
 
