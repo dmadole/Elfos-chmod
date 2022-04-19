@@ -6,27 +6,22 @@
 ; *** without express written permission from the author.         ***
 ; *******************************************************************
 
+.op "PUSH","N","9$1 73 8$1 73"
+.op "POP","N","60 72 A$1 F0 B$1"
+.op "CALL","W","D4 H1 L1"
+.op "RTN","","D5"
+.op "MOV","NR","9$2 B$1 8$2 A$1"
+.op "MOV","NW","F8 H2 B$1 F8 L2 A$1"
+
 include    ../bios.inc
 include    ../kernel.inc
 
 d_idewrite: equ    044ah
 d_ideread:  equ    0447h
 
-           org     8000h
-           lbr     0ff00h
-           db      'chmod',0
-           dw      9000h
-           dw      endrom+7000h
-           dw      2000h
-           dw      endrom-2000h
-           dw      2000h
-           db      0
- 
            org     2000h
-           br      start
-
-include    date.inc
-include    build.inc
+begin:     br      start
+           eever
            db      'Written by Michael H. Riley',0
 
 ; Rb - modifications
@@ -94,7 +89,8 @@ notpw:     glo     re                  ; recover byte
 swerr:     sep     scall               ; display error
            dw      o_inmsg
            db      'Invalid switch specified',10,13,0
-           lbr     o_wrmboot           ; and return to Elf/OS
+           ldi     9
+           sep     sret                ; and return to OS
 swdone:    mov     rf,flags            ; where to store flags
            glo     rb                  ; get operations
            str     rf                  ; and save them
@@ -118,6 +114,7 @@ loop1:     lda     rf                  ; look for first less <= space
            sep     scall               ; otherwise display usage message
            dw      o_inmsg
            db      'Usage: type filename',10,13,0
+           ldi     0ah
            sep     sret                ; and return to os
 good:      ldi     high fildes         ; get file descriptor
            phi     rd
@@ -134,7 +131,8 @@ good:      ldi     high fildes         ; get file descriptor
            plo     rf
            sep     scall               ; display it
            dw      o_msg
-           lbr     o_wrmboot           ; and return to os
+           ldi     04
+           sep     sret                ; and return to os
 mainlp:    mov     rf,sector           ; point to dir sector in FILDES
            inc     rf
            lda     rf                  ; retrieve sector
@@ -223,7 +221,8 @@ not6:
            sep     scall               ; write sector back to disk
            dw      d_idewrite
 
-done:      lbr     o_wrmboot           ; return to os
+done:      ldi     0
+           sep     sret                ; return to os
 
 errmsg:    db      'File not found',10,13,0
 flags:     db      0
@@ -237,9 +236,13 @@ dirent:    dw      0,0
 
 endrom:    equ     $
 
+.suppress
+
 buffer:    ds      20
 cbuffer:   ds      80
 dta:       ds      512
 secbuf:    dw      512
+
+           end     begin
 
 
