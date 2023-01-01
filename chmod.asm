@@ -21,7 +21,7 @@ d_ideread:  equ    0447h
 
            org     2000h
 begin:     br      start
-           eever
+           ever
            db      'Written by Michael H. Riley',0
 
 ; Rb - modifications
@@ -120,7 +120,7 @@ good:      ldi     high fildes         ; get file descriptor
            phi     rd
            ldi     low fildes
            plo     rd
-           ldi     0                   ; flags for open
+           ldi     16                  ; allow opening directories
            plo     r7
            sep     scall               ; attempt to open file
            dw      o_open
