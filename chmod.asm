@@ -13,8 +13,8 @@
 .op "MOV","NR","9$2 B$1 8$2 A$1"
 .op "MOV","NW","F8 H2 B$1 F8 L2 A$1"
 
-include    ../bios.inc
-include    ../kernel.inc
+#include    ../bios.inc
+#include    ../kernel.inc
 
 d_idewrite: equ    044ah
 d_ideread:  equ    0447h
@@ -208,15 +208,15 @@ not5:      glo     rb                  ; check for -h
            str     r7
 not6:
            mov     rf,sector           ; point to dir sector in FILDES
-           inc     rf
+           lda     rf                  ; retrieve sector
+           ori     0e0h                ; lba mode
+           phi     r8
            lda     rf                  ; retrieve sector
            plo     r8
            lda     rf
            phi     r7
            lda     rf
            plo     r7
-           ldi     0e0h                ; lba mode
-           phi     r8
            mov     rf,secbuf           ; where to load sector
            sep     scall               ; write sector back to disk
            dw      d_idewrite
