@@ -1,0 +1,31 @@
+Name:
+  chmod - change flags on files
+
+Usage:
+  chmod [-v] [-d] [+[x|w|h|a]|-[x|w|h|a]] ... path
+
+Description:
+  This command changes flag bits on files as specified. This command can 
+  operate on either a single file, or all files within a directory.
+
+Options:
+  -v (verbose) displays the paths of all files that are modified
+  -d (directory) operates on all the files within a directory
+  -x/+x (executable) clears/sets bit 02h marking the file executable
+  -w/+w (write protect) clears/sets bit 04h marking the file write protected
+  -h/+h (hidden) clears/sets bit 08h marking the file as hidden
+  -a/+a (archive) clears/sets bit 10h marking the file as archive-ready
+
+Details:
+  At this time, flags can only be changed on files and not directories. When 
+  the option -d is used, directories encountered will not be modified.
+  
+  When the path name is specified with a trailing slash, it is treated the 
+  same as if the -d option was specified.
+
+  Options of like types can be concatenated after a single leading (+ or -), 
+  and options may be specified multiple times. The last definition of each 
+  flag bit, ordered left-to-right, is what is applied to the file.
+
+Source:
+  Mini/DOS chmod utility - https://github/dmadole/MiniDOS-chmod
